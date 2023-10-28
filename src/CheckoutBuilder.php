@@ -84,6 +84,14 @@ class CheckoutBuilder
                 : [],
         ]);
 
+        // In "setup" mode, Stripe's API returns an error if we pass tax-related options
+        // We are therefore removing these options as they were causing bugs when adding a payment method in Laravel Spark
+        // This has no impact, as this information is useless when adding a payment method
+        if (!empty($sessionOptions['mode']) && $sessionOptions['mode'] === 'setup') {
+            unset($payload['automatic_tax']);
+            unset($payload['tax_id_collection']);
+        }
+
         return Checkout::create($this->owner, array_merge($payload, $sessionOptions), $customerOptions);
     }
 }
